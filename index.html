@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maa - A Tribute</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/typeit@8.7.1/dist/index.umd.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Tiro+Devanagari+Hindi&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            overflow: hidden;
+        }
+
+        .font-hindi {
+            font-family: 'Tiro Devanagari Hindi', serif;
+        }
+
+        .emoji {
+            position: absolute;
+            font-size: 2rem;
+            user-select: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        img:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 8px 25px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="text-white">
+
+    <!-- Floating Emoji Layer -->
+    <div id="emoji-container" class="fixed inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Page 1 -->
+    <div id="page1" class="h-screen w-screen flex flex-col justify-center items-center p-4 relative overflow-hidden">
+        <div class="z-10 flex flex-col items-center text-center">
+            <img id="mom-image" src="./Maa (4).jpg" alt="A loving mother"
+                class="w-32 h-32 md:w-48 md:h-48 object-cover rounded-2xl border-4 border-white/80 shadow-2xl mb-8">
+            <h1 id="heading" class="font-hindi text-6xl md:text-8xl font-bold text-white opacity-0">ମା</h1>
+            <p id="message" class="mt-6 max-w-2xl text-lg md:text-xl text-gray-200 leading-relaxed"></p>
+        </div>
+        <button id="next-btn-1"
+            class="z-10 absolute bottom-8 right-8 bg-white/20 backdrop-blur-sm text-white py-2 px-6 rounded-lg border border-white/30 transition hover:bg-white/30 hover:shadow-lg hover:scale-105">
+            Next →
+        </button>
+    </div>
+
+    <!-- Page 2 -->
+    <div id="page2" class="h-screen w-screen absolute top-0 left-0 flex flex-col justify-center items-center p-4 opacity-0"
+        style="visibility: hidden;">
+        <div class="text-center z-10">
+            <h2 id="love-text" class="text-4xl md:text-6xl font-bold text-white mb-12">Love You Mom</h2>
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto"></div>
+        </div>
+        <button id="back-btn"
+            class="z-10 absolute bottom-8 left-8 bg-white/20 backdrop-blur-sm text-white py-2 px-6 rounded-lg border border-white/30 transition hover:bg-white/30 hover:shadow-lg hover:scale-105">
+            ← Back
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+            const nextBtn1 = document.getElementById('next-btn-1');
+            const backBtn = document.getElementById('back-btn');
+            const emojiContainer = document.getElementById('emoji-container');
+            const momImage = document.getElementById('mom-image');
+            let autoTransitionTimer;
+
+            // Fallback image if main image fails
+            momImage.addEventListener('error', () => {
+                momImage.src = 'https://placehold.co/200x200/e2e8f0/4a5568?text=MUMMY';
+            });
+
+            // Emoji Animation
+            function startEmojiAnimation() {
+                const emojis = ['💖', '✨', '🌸', '❤️', '💕', '🥰','😘','😍','🎂','🎊'];
+                for (let i = 0; i < 50; i++) {
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.className = 'emoji';
+                    emojiSpan.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    emojiContainer.appendChild(emojiSpan);
+
+                    gsap.set(emojiSpan, {
+                        x: Math.random() * window.innerWidth,
+                        y: window.innerHeight + 50,
+                        scale: Math.random() * 0.5 + 0.8
+                    });
+
+                    gsap.to(emojiSpan, {
+                        y: -100,
+                        opacity: gsap.utils.random(0.3, 0.8),
+                        duration: gsap.utils.random(6, 12),
+                        ease: 'none',
+                        repeat: -1,
+                        delay: Math.random() * 5,
+                        repeatRefresh: true,
+                        onRepeat() {
+                            gsap.set(this.targets()[0], {
+                                x: Math.random() * window.innerWidth,
+                                y: window.innerHeight + 50
+                            });
+                        }
+                    });
+                }
+            }
+
+            // Page 1 animation
+            function playPage1Animations() {
+                gsap.timeline()
+                    .fromTo('#mom-image', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.2, ease: 'power3.out' })
+                    .to('#heading', { opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out' }, "-=0.8")
+                    .add(() => {
+                        new TypeIt("#message", {
+                            strings: "For the endless love, the silent sacrifices, and the unwavering support. You are the heart of our family, the anchor in our lives. Thank you for everything.",
+                            speed: 50,
+                            cursor: false
+                        }).go();
+                    }, "-=0.5");
+
+                clearTimeout(autoTransitionTimer);
+                autoTransitionTimer = setTimeout(showPage2, 10000);
+            }
+
+            // Page 2 animation
+            function playPage2Animations() {
+                const gallery = document.getElementById('gallery-grid');
+                gallery.innerHTML = '';
+                const imageUrls = [
+                    './Maa (1).jpg',
+                    './Maa (2).jpg',
+                    './Maa (3).jpg',
+                ];
+
+                imageUrls.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = "Mother's memory";
+                    img.className = "w-full h-96 object-cover rounded-xl border-4 border-white/60 shadow-2xl";
+                    img.addEventListener('error', () => {
+                        img.src = 'https://placehold.co/500x600/e2e8f0/4a5568?text=Memory';
+                    });
+                    const div = document.createElement('div');
+                    div.className = 'gallery-item';
+                    div.appendChild(img);
+                    gallery.appendChild(div);
+                });
+                gsap.timeline()
+                    .fromTo('#love-text', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out' })
+                    .fromTo('.gallery-item', { opacity: 0, y: 50, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out', stagger: 0.2 }, "-=0.8");
+            }
+            function showPage2() {
+                clearTimeout(autoTransitionTimer);
+                gsap.timeline({
+                    onComplete: () => {
+                        page1.style.visibility = 'hidden';
+                        playPage2Animations();
+                    }
+                })
+                    .to(page1, { opacity: 0, duration: 0.8, ease: 'power2.inOut' })
+                    .to(page2, { opacity: 1, duration: 0.8, ease: 'power2.inOut', onStart: () => page2.style.visibility = 'visible' }, "-=0.5");
+            }
+            function showPage1() {
+                gsap.timeline({
+                    onComplete: () => {
+                        page2.style.visibility = 'hidden';
+                        playPage1Animations();
+                    }
+                })
+                    .to(page2, { opacity: 0, duration: 0.8, ease: 'power2.inOut' })
+                    .to(page1, { opacity: 1, duration: 0.8, ease: 'power2.inOut', onStart: () => page1.style.visibility = 'visible' }, "-=0.5");
+            }
+            nextBtn1.addEventListener('click', showPage2);
+            backBtn.addEventListener('click', showPage1);
+            startEmojiAnimation();
+            playPage1Animations();
+        });
+    </script>
+</body>
+
+</html>
